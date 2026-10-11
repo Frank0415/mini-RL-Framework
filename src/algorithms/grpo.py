@@ -1,4 +1,5 @@
 import torch
+from mini_megatron import ModelEngine, Trainer
 
 from ..types import TrainBatch
 
@@ -9,10 +10,14 @@ class GRPOAlgorithm:
         clip_eps: float = 0.2,
         kl_coef: float = 0.0,
         epsilon: float = 1e-8,
+        minibatch_size: int = 4,
+        update_epochs: int = 1,
     ):
         self.clip_eps = clip_eps
         self.kl_coef = kl_coef
         self.epsilon = epsilon
+        self.minibatch_size = minibatch_size
+        self.update_epochs = update_epochs
 
     def advantages(
         self,
@@ -60,4 +65,53 @@ class GRPOAlgorithm:
             "policy_loss": policy_loss.mean().detach().item(),
             "kl": kl_mean.mean().detach().item(),
             "clip_fraction": clipped.masked_select(mask).float().mean().item(),
+        }
+
+    def update(
+        self,
+        trainer: Trainer,
+        batch: TrainBatch,
+        reference: ModelEngine | None = None,
+    ) -> dict[str, float]:
+        if self.kl_coef and reference is None:
+            raise ValueError("A reference model is required for KL loss")
+        if reference is not None:
+            reference.model.eval().requires_grad_(False)
+        batch = batch.to(trainer.engine.device)
+        with torch.no_grad():
+            batch.old_log_probs = batch.response_log_probs(
+                trainer.engine.log_probs(batch.input_ids, batch.attention_mask),
+            ).detach()
+            ref_log_probs = (
+                batch.response_log_probs(reference.log_probs(batch.input_ids, batch.attention_mask))
+                if self.kl_coef else None
+            )
+        batch.advantages = self.advantages(batch.rewards, batch.group_ids)
+        totals = {}
+        count = 0
+        batch_size = batch.input_ids.shape[0]
+        for _ in range(self.update_epochs):
+            order = torch.randperm(batch_size, device=trainer.engine.device)
+            for indices in order.split(self.minibatch_size):
+                minibatch = batch.select(indices)
+                ref_probs = ref_log_probs[indices] if ref_log_probs is not None else None
+
+                def loss_fn(log_probs):
+                    return self.loss(
+                        minibatch.response_log_probs(log_probs), minibatch, ref_probs,
+                    )
+
+                metrics = trainer.train_step(
+                    minibatch.input_ids, minibatch.attention_mask, loss_fn,
+                )
+                for name, value in metrics.items():
+                    if name != "optimizer_step":
+                        totals[name] = totals.get(name, 0.0) + value * len(indices)
+                count += len(indices)
+        difference = (batch.old_log_probs - batch.rollout_log_probs).abs()
+        return {
+            **{name: value / count for name, value in totals.items()},
+            "reward_mean": batch.rewards.mean().item(),
+            "logprob_abs_diff": difference.masked_select(batch.response_mask.bool()).mean().item(),
+            "actor_version": trainer.optimizer_step,
         }

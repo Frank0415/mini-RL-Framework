@@ -1,12 +1,70 @@
-"""定义模块之间交换的数据。
+from dataclasses import dataclass, replace
 
-Prompt 表示题目；Sample 表示一个回答；SampleGroup 保存同题的多个回答；TrainBatch 保存训练张量和样本编号。
-数据源、采样模块和训练模块使用同一组数据结构，保留原始词元、概率和实际权重版本。
+import torch
 
-Define the data exchanged between modules.
-Prompt holds a question. Sample holds one response. SampleGroup holds responses to the same question. TrainBatch holds training tensors and sample IDs.
-The data source, rollout worker, and training worker share these structures. Keep token IDs, log probabilities, and actual weight versions.
 
-计划接口 / Planned interfaces:
-Prompt, Sample, SampleGroup, TrainBatch
-"""
+@dataclass
+class Prompt:
+    prompt_id: str
+    prompt_token_ids: list[int]
+    answer: str
+
+
+@dataclass
+class Sample:
+    sample_id: str
+    group_id: str
+    prompt_token_ids: list[int]
+    response_token_ids: list[int]
+    rollout_log_probs: list[float]
+    behavior_version: int
+    reward: float
+    finish_reason: str
+
+
+@dataclass
+class SampleGroup:
+    group_id: str
+    prompt_id: str
+    samples: list[Sample]
+
+
+@dataclass
+class TrainBatch:
+    input_ids: torch.Tensor
+    attention_mask: torch.Tensor
+    response_mask: torch.Tensor
+    prompt_lengths: torch.Tensor
+    response_lengths: torch.Tensor
+    rollout_log_probs: torch.Tensor
+    rewards: torch.Tensor
+    behavior_versions: torch.Tensor
+    sample_ids: list[str]
+    group_ids: list[str]
+    old_log_probs: torch.Tensor | None = None
+    advantages: torch.Tensor | None = None
+
+    def to(self, device: torch.device | str):
+        return replace(self, **{
+            name: value.to(device)
+            for name, value in vars(self).items()
+            if isinstance(value, torch.Tensor)
+        })
+
+    def select(self, indices: torch.Tensor):
+        values = {}
+        selected = indices.tolist()
+        for name, value in vars(self).items():
+            if isinstance(value, torch.Tensor):
+                values[name] = value[indices]
+            elif isinstance(value, list):
+                values[name] = [value[index] for index in selected]
+        return replace(self, **values)
+
+    def response_log_probs(self, log_probs: torch.Tensor) -> torch.Tensor:
+        mask = self.response_mask.bool()
+        positions = self.prompt_lengths[:, None] - 1 + torch.arange(
+            mask.shape[1], device=log_probs.device,
+        )
+        positions = positions.masked_fill(~mask, 0)
+        return log_probs.gather(1, positions).masked_fill(~mask, 0)
