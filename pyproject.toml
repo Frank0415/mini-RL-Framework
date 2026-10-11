@@ -2,18 +2,22 @@
 name = "mini-rl-framework"
 version = "0.1.0"
 description = "A reinforcement learning framework built from scratch."
-readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "gymnasium[classic-control]>=1.4.0",
+    "mini-megatron",
+    "mini-sglang",
     "numpy>=2.5.3",
     "torch==2.14.0",
 ]
 
 [tool.uv]
 package = false
+config-settings-package = { mini-sglang = { editable_mode = "strict" } }
 
 [tool.uv.sources]
+mini-megatron = { path = "mini-megatron", editable = true }
+mini-sglang = { path = "mini-sglang", editable = true }
 torch = { index = "pytorch-cu132" }
 
 [[tool.uv.index]]
