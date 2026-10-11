@@ -10,3 +10,13 @@ main builds the objects. Trainer runs the training loop.
 计划接口 / Planned interfaces:
 main(config_path), build(config)
 """
+from config import RunConfig
+from tasks.prompt_source import PromptSource
+from transformers import AutoTokenizer
+
+def main(config_path: str):
+    config = RunConfig.from_toml(config_path)
+    tokenizer = AutoTokenizer.from_pretrained(config.model.path,local_files_only=True)
+    source = PromptSource(config.data, tokenizer, config.task.prompt_template)
+
+    
