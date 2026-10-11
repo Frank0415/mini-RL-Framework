@@ -1,12 +1,32 @@
-"""准备训练数据并更新训练模型。
+from mini_megatron import ModelEngine, Trainer
 
-TrainingWorker 在更新前重算旧策略概率并冻结结果，检查训练与推理差异，再计算优势值。
-它持有训练模型、可选参考模型、算法和优化器，按小批次执行前向、反向传播和参数更新。
+from ...algorithms.grpo import GRPOAlgorithm
+from ...types import TrainBatch
 
-Prepare training data and update the training model.
-TrainingWorker recomputes and freezes old-policy log probabilities before updates, checks rollout consistency, and computes advantages.
-It owns the actor, optional reference model, algorithm, and optimizer. It runs forward, backward, and optimizer steps for each minibatch.
 
-计划接口 / Planned interfaces:
-TrainingWorker.update(batch), state_dict(), load_state_dict(state)
-"""
+class TrainingWorker:
+    def __init__(
+        self,
+        trainer: Trainer,
+        algorithm: GRPOAlgorithm,
+        reference: ModelEngine | None = None,
+    ):
+        self.trainer = trainer
+        self.algorithm = algorithm
+        self.reference = reference
+
+    @property
+    def actor_version(self) -> int:
+        return self.trainer.optimizer_step
+
+    def update(self, batch: TrainBatch) -> dict[str, float]:
+        return self.algorithm.update(self.trainer, batch, self.reference)
+
+    def export_weights(self):
+        return self.trainer.engine.export_weights()
+
+    def state_dict(self) -> dict[str, object]:
+        return self.trainer.state_dict()
+
+    def load_state_dict(self, state: dict[str, object]) -> None:
+        self.trainer.load_state_dict(state)
