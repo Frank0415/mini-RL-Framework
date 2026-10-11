@@ -1,6 +1,6 @@
-"""后续并发训练中保存已完成的回答组。ExperienceBuffer 管理容量和版本准入。
-同步版本由 DataEngine 保存并消费本轮回答组。
+"""完成经验存储。ExperienceBuffer 保存已经生成并评分的回答组，管理容量和版本准入。
+DataEngine 写入与取出经验；在途请求额度由 SubmissionScheduler 管理。
 
-Store completed response groups for future concurrent training. ExperienceBuffer manages capacity and version admission.
-The synchronous version uses DataEngine to store and consume the current iteration's groups.
+Completed experience storage. ExperienceBuffer holds generated and scored response groups and manages capacity and version admission.
+DataEngine inserts and consumes experience; SubmissionScheduler manages requests in flight.
 """

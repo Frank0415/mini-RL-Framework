@@ -1,4 +1,4 @@
-"""阶段日志和一致性诊断。记录事件并导出训练时间线。
+"""运行观测。连接 Runtime 和各模块的阶段事件、数值指标、概率一致性检查与时间线导出。
 
-Stage logging and consistency checks. Record events and export training timelines.
+Run observability connects Runtime and module stage events, metrics, probability consistency checks, and trace export.
 """

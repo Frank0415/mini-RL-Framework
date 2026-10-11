@@ -1,6 +1,6 @@
-"""后续远程权重同步中传输参数。WeightTransport 负责把快照送到推理进程。
-同步版本由 WeightSync 直接把快照交给推理引擎。
+"""在线权重传输。WeightTransport 将 Snapshot 参数交给推理侧安装过程。
+单机可直接传参数；安装、缓存处理和版本提交由 InstallSession 负责。
 
-Transfer parameters during future remote weight synchronization. WeightTransport sends snapshots to the rollout process.
-The synchronous WeightSync passes snapshots directly to the rollout engine.
+Online weight transfer. WeightTransport delivers Snapshot parameters to rollout installation.
+A local implementation can pass parameters directly; InstallSession owns installation, cache handling, and version commit.
 """

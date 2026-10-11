@@ -1,3 +1,10 @@
+"""训练角色的执行入口。TrainingWorker 初始化并组织训练组件与算法，向 Runtime 提供 update、权重导出和状态恢复。
+前向、反向传播与优化器由 mini-megatron 执行；跨 worker 调度由 Runtime 负责。
+
+Execution entry point for training roles. TrainingWorker initializes and connects training components and algorithms for Runtime.
+mini-megatron executes forward, backward, and optimizer steps; Runtime coordinates workers and calls update, weight export, and recovery.
+"""
+
 from mini_megatron import ModelEngine, Trainer
 
 from ...algorithms.grpo import GRPOAlgorithm

@@ -1,4 +1,4 @@
-"""同步 LLM RL 引擎。训练入口是 src.train。
+"""RL 框架。train 负责触发，Runtime 协调任务源、worker、数据与 checkpoint。
 
-Synchronous LLM RL engine. The training entry point is src.train.
+RL framework. train triggers a run; Runtime coordinates tasks, workers, data, and checkpoints.
 """

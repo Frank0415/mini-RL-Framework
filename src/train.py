@@ -1,22 +1,15 @@
-"""连接模块并启动同步 RL 训练。
+"""训练触发入口。main 读取 RunConfig，创建 Runtime 并调用 run。
+组件初始化、阶段调度和训练循环由 Runtime 与对应 worker 负责。
 
-读取配置，创建分词器、训练模型、推理模型和优化器，再创建 Trainer。退出时关闭日志。
-main 负责创建对象；Trainer 负责执行训练循环。
-
-Build the modules and start synchronous RL training.
-Read the configuration. Create the tokenizer, training model, rollout model, optimizer, and Trainer. Close the logger on exit.
-main builds the objects. Trainer runs the training loop.
-
-计划接口 / Planned interfaces:
-main(config_path), build(config)
+Training entry point. main reads RunConfig, creates Runtime, and calls run.
+Runtime and the corresponding workers own initialization, stage scheduling, and execution.
 """
+
 from config import RunConfig
-from tasks.prompt_source import PromptSource
-from transformers import AutoTokenizer
+from core.runtime.runtime import Runtime
+
 
 def main(config_path: str):
     config = RunConfig.from_toml(config_path)
-    tokenizer = AutoTokenizer.from_pretrained(config.model.path,local_files_only=True)
-    source = PromptSource(config.data, tokenizer, config.task.prompt_template)
-
-    
+    runtime = Runtime(config)
+    runtime.run()

@@ -1,3 +1,10 @@
+"""采样执行入口。RolloutWorker 初始化推理组件，组织 tokenizer、任务交互和 verifier，向 Runtime 提供 collect。
+每题的回答组成 SampleGroup，保留原始 token、logprob、奖励和实际版本；TaskLoop 与 SubmissionScheduler 管理内部交互和提交。
+
+Rollout execution entry point. RolloutWorker initializes inference components and connects the tokenizer, task interaction, and verifier, exposing collect to Runtime.
+Group responses by task and retain tokens, log probabilities, rewards, and actual versions; TaskLoop and SubmissionScheduler handle interaction and submission.
+"""
+
 from collections.abc import Callable
 from typing import cast
 from uuid import uuid4
@@ -33,10 +40,12 @@ class RolloutWorker:
         ]
         results = self.engine.generate_batch(inputs, self.max_new_tokens)
         groups = []
+
         for index, prompt in enumerate(prompts):
             group_id = uuid4().hex
             responses = results[index * samples_per_prompt:(index + 1) * samples_per_prompt]
             samples = []
+
             for response in responses:
                 if response.status != RequestStatus.FINISHED:
                     raise RuntimeError(f"Rollout failed: {response.finish_reason}")
@@ -52,4 +61,5 @@ class RolloutWorker:
                     finish_reason=cast(str, response.finish_reason),
                 ))
             groups.append(SampleGroup(group_id, prompt.prompt_id, samples))
+            
         return groups

@@ -1,12 +1,6 @@
-"""把本轮完整回答组整理成训练批次。
+"""数据管理入口。DataEngine 接收完整采样组，组织经验存储、采样和张量读写，返回 TrainBatch。
+它负责 padding、掩码、组编号和版本对齐；算法负责优势值与目标函数，Runtime 负责调用顺序。
 
-DataEngine 接收已评分的完整组，核对采样版本，再补齐序列长度并创建有效词元掩码。
-Trainer 放入 RolloutWorker 的结果，再取出 TrainBatch 交给 TrainingWorker。优势值在完整组上计算。
-
-Build a training batch from complete response groups for the current iteration.
-DataEngine receives complete scored groups, checks behavior versions, pads sequences, and creates valid-token masks.
-Trainer puts rollout results into DataEngine and passes the returned TrainBatch to TrainingWorker. Compute advantages over complete groups.
-
-计划接口 / Planned interfaces:
-DataEngine.put(groups), DataEngine.take(n_groups, expected_version)
+Data management entry point. DataEngine receives complete rollout groups and organizes storage, selection, and tensor access to return TrainBatch.
+It aligns padding, masks, group IDs, and versions; algorithms compute advantages and objectives, while Runtime orders calls.
 """

@@ -1,4 +1,4 @@
-"""训练状态保存与恢复。checkpoint_store 提供 save 和 load。
+"""持久化 checkpoint。保存与恢复模型、优化器、任务源位置和运行进度，供 Runtime 继续运行。
 
-Training state storage and recovery. checkpoint_store provides save and load.
+Persistent checkpoints store and restore models, optimizers, data-source position, and run progress for Runtime.
 """

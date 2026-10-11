@@ -1,6 +1,6 @@
-"""后续跨进程传递训练张量。TransferQueue 存放张量并支持按字段读取。
-同步版本直接传递 TrainBatch 对象。
+"""张量存放与传递。TransferQueue 管理实际 tensor 的存取和字段读写，供 DataEngine 组装与传递 batch。
+选哪些经验用于训练由 Sampler 决定。
 
-Transfer training tensors between processes in a future version. TransferQueue stores tensors and supports field reads.
-The synchronous version passes TrainBatch objects directly.
+Tensor storage and transfer. TransferQueue stores tensors and provides field access for DataEngine batch assembly and delivery.
+Sampler decides which experience enters training.
 """

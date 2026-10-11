@@ -1,3 +1,10 @@
+"""模块间的数据约定。Prompt 是输入任务，Sample 是一次回答，SampleGroup 是同题回答组。
+TrainBatch 保存训练张量、掩码、组编号和采样版本，连接 DataEngine 与 TrainingWorker。
+
+Data contracts between modules. Prompt holds a task, Sample a response, and SampleGroup responses to the same task.
+TrainBatch connects DataEngine to TrainingWorker with tensors, masks, group IDs, and behavior versions.
+"""
+
 from dataclasses import dataclass, replace
 
 import torch

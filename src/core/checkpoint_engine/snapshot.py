@@ -1,6 +1,6 @@
-"""后续权重同步拆分时保存权重快照的数据结构。
-当前 WeightSnapshot 定义在 src.core.weight_sync，保存独立复制的权重和版本。
+"""在线权重快照。Snapshot 冻结本轮参数，携带模型标识与版本，供 WeightTransport 传输。
+快照使用独立参数副本，后续优化器更新不会改变已发布版本。
 
-A future location for weight snapshot data when synchronization is split into separate modules.
-WeightSnapshot currently belongs in src.core.weight_sync and holds copied weights and their version.
+Online weight snapshot. Snapshot freezes parameters with model identity and version for WeightTransport.
+Independent parameter copies keep later optimizer updates from changing the published version.
 """

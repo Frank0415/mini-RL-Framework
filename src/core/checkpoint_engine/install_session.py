@@ -1,6 +1,6 @@
-"""后续远程权重更新中组织暂停、安装、缓存清理和恢复。
-同步版本由 WeightSync 和 TorchRolloutEngine.install 完成权重安装。
+"""推理权重安装过程。InstallSession 组织暂停、安装、提交版本和恢复，确保请求使用完整的一版权重。
+mini-sglang 的 update_weights 提供单机加载、旧缓存释放和版本提交；Runtime 等待安装完成。
 
-Coordinate pause, installation, cache cleanup, and resume during future remote weight updates.
-The synchronous version installs weights through WeightSync and TorchRolloutEngine.install.
+Rollout weight installation. InstallSession coordinates pause, installation, version commit, and resume so requests use a complete weight version.
+mini-sglang update_weights supplies local loading, cache release, and version commit; Runtime waits for completion.
 """

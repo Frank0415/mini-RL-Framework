@@ -1,4 +1,4 @@
-"""训练数据整理。把完整回答组变成训练批次。
+"""经验与训练数据管理。DataEngine 连接 ExperienceBuffer、Sampler 和 TransferQueue，向 Runtime 提供训练 batch。
 
-Training data preparation. Turn complete response groups into training batches.
+Experience and training data management. DataEngine connects ExperienceBuffer, Sampler, and TransferQueue to provide batches to Runtime.
 """

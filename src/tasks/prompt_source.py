@@ -1,15 +1,10 @@
-"""读取题目并生成模型输入。
+"""题目数据源。PromptSource 读取数据，应用任务模板和 tokenizer，返回 Prompt。
+Runtime 调用 next_batch 取题；标准答案留作评分标签，state_dict 保存读取位置。
 
-PromptSource 读取 JSONL 题目，应用输入模板并分词，保存数据读取位置。
-Trainer 调用 next_batch 取题。采样和训练共用这里生成的词元编号；恢复训练时加载读取状态。
-
-Read prompts and prepare model inputs.
-PromptSource reads JSONL records, applies the input template, tokenizes prompts, and tracks the reading position.
-Trainer calls next_batch. Rollout and training use the same token IDs. Restore the reading state when resuming training.
-
-计划接口 / Planned interfaces:
-PromptSource.next_batch(n), state_dict(), load_state_dict(state)
+Prompt data source. PromptSource reads records, applies the task template and tokenizer, and returns Prompt objects.
+Runtime requests batches; answers remain scoring labels, and state_dict preserves the reading position.
 """
+
 import json
 
 from ..config import DataConfig
