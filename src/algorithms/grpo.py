@@ -96,7 +96,7 @@ class GRPOAlgorithm:
                 minibatch = batch.select(indices)
                 ref_probs = ref_log_probs[indices] if ref_log_probs is not None else None
 
-                def loss_fn(log_probs):
+                def loss_fn(log_probs, minibatch=minibatch, ref_probs=ref_probs):
                     return self.loss(
                         minibatch.response_log_probs(log_probs), minibatch, ref_probs,
                     )
