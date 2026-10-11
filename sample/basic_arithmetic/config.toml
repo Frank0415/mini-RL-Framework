@@ -1,0 +1,20 @@
+[task]
+prompt_template = "{question}\nReturn only the final integer on a line beginning with ####."
+
+[data]
+train = "data/train.jsonl"
+
+[verifier]
+path = "verifier.py"
+
+[model]
+path = "model"
+
+[rollout]
+samples_per_prompt = 4
+max_new_tokens = 32
+
+[training]
+learning_rate = 0.00001
+minibatch_size = 4
+update_epochs = 1

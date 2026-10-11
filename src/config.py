@@ -1,12 +1,67 @@
-"""读取同步 GRPO 的运行配置。
+from dataclasses import dataclass
+from pathlib import Path
+import tomllib
 
-RunConfig 保存模型路径、数据路径、设备、训练参数和日志目录。
-main 从 TOML 文件读取配置，再把所需参数传给各模块。
 
-Read the configuration for synchronous GRPO.
-RunConfig holds model paths, data paths, devices, training settings, and the log directory.
-main reads the TOML file and passes the required settings to each module.
+@dataclass
+class TaskConfig:
+    prompt_template: str
 
-计划接口 / Planned interfaces:
-RunConfig.from_toml(path)
-"""
+
+@dataclass
+class DataConfig:
+    train: Path
+
+
+@dataclass
+class VerifierConfig:
+    path: Path
+
+
+@dataclass
+class ModelConfig:
+    path: Path
+
+
+@dataclass
+class RolloutConfig:
+    samples_per_prompt: int = 4
+    max_new_tokens: int = 32
+
+
+@dataclass
+class TrainingConfig:
+    learning_rate: float = 1e-5
+    minibatch_size: int = 4
+    update_epochs: int = 1
+
+
+@dataclass
+class RunConfig:
+    task: TaskConfig
+    data: DataConfig
+    verifier: VerifierConfig
+    model: ModelConfig
+    rollout: RolloutConfig
+    training: TrainingConfig
+
+    @classmethod
+    def from_toml(cls, path: str | Path) -> "RunConfig":
+        path = Path(path)
+        if path.is_dir():
+            path = path / "config.toml"
+        path = path.resolve()
+        with path.open("rb") as file:
+            config = tomllib.load(file)
+        for section, key in (
+            ("data", "train"), ("verifier", "path"), ("model", "path"),
+        ):
+            config[section][key] = (path.parent / config[section][key]).resolve()
+        return cls(
+            task=TaskConfig(**config["task"]),
+            data=DataConfig(**config["data"]),
+            verifier=VerifierConfig(**config["verifier"]),
+            model=ModelConfig(**config["model"]),
+            rollout=RolloutConfig(**config["rollout"]),
+            training=TrainingConfig(**config["training"]),
+        )
