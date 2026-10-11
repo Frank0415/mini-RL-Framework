@@ -1,8 +1,8 @@
-"""训练角色的执行入口。TrainingWorker 初始化并组织训练组件与算法，向 Runtime 提供 update、权重导出和状态恢复。
-前向、反向传播与优化器由 mini-megatron 执行；跨 worker 调度由 Runtime 负责。
+"""训练执行入口。TrainingWorker 接收 mini-megatron Trainer 和算法，提供 update、权重导出和状态恢复。
+算法安排本批更新；mini-megatron 执行前向、反向传播和优化器步骤，Runtime 协调全局阶段。
 
-Execution entry point for training roles. TrainingWorker initializes and connects training components and algorithms for Runtime.
-mini-megatron executes forward, backward, and optimizer steps; Runtime coordinates workers and calls update, weight export, and recovery.
+Training execution entry point. TrainingWorker receives a mini-megatron Trainer and an algorithm, exposing update, weight export, and recovery.
+The algorithm arranges batch updates; mini-megatron executes forward, backward, and optimizer steps; Runtime coordinates overall stages.
 """
 
 from mini_megatron import ModelEngine, Trainer

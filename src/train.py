@@ -1,8 +1,8 @@
 """训练触发入口。main 读取 RunConfig，创建 Runtime 并调用 run。
-组件初始化、阶段调度和训练循环由 Runtime 与对应 worker 负责。
+Runtime 负责组件连接和同步训练循环，worker 执行各自的阶段。
 
 Training entry point. main reads RunConfig, creates Runtime, and calls run.
-Runtime and the corresponding workers own initialization, stage scheduling, and execution.
+Runtime connects components and orders the synchronous loop; workers execute their stages.
 """
 
 from config import RunConfig

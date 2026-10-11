@@ -1,6 +1,6 @@
-"""张量存放与传递。TransferQueue 管理实际 tensor 的存取和字段读写，供 DataEngine 组装与传递 batch。
-选哪些经验用于训练由 Sampler 决定。
+"""经验张量存放与传递。TransferQueue 提供 tensor 存取与字段读写，供 DataEngine 组装和传递 batch。
+Sampler 决定训练使用哪些经验；模型参数传输属于 CheckpointEngine。
 
-Tensor storage and transfer. TransferQueue stores tensors and provides field access for DataEngine batch assembly and delivery.
-Sampler decides which experience enters training.
+Experience tensor storage and transfer. TransferQueue provides tensor storage and field access for DataEngine batch assembly and delivery.
+Sampler selects training experience; CheckpointEngine handles model parameter transfer.
 """

@@ -1,7 +1,7 @@
-"""题目数据源。PromptSource 读取数据，应用任务模板和 tokenizer，返回 Prompt。
+"""题目数据源。PromptSource 读取 JSONL，应用任务模板和 tokenizer，返回 Prompt。
 Runtime 调用 next_batch 取题；标准答案留作评分标签，state_dict 保存读取位置。
 
-Prompt data source. PromptSource reads records, applies the task template and tokenizer, and returns Prompt objects.
+Prompt data source. PromptSource reads JSONL, applies the task template and tokenizer, and returns Prompt objects.
 Runtime requests batches; answers remain scoring labels, and state_dict preserves the reading position.
 """
 

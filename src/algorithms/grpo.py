@@ -1,8 +1,8 @@
 """GRPO 算法。计算组内优势值、概率比例、裁剪损失和可选 reference KL。
-update 固定本批旧概率并安排 minibatch 更新，通过 mini-megatron 执行训练；Runtime 协调采样与同步。
+update 在参数更新前重算并固定本批旧概率，安排 minibatch 和 epoch，通过 mini-megatron 执行训练。
 
 GRPO algorithm. Compute group advantages, probability ratios, clipped loss, and optional reference KL.
-update freezes old probabilities and schedules minibatches through mini-megatron; Runtime coordinates rollout and synchronization.
+update recomputes and freezes old probabilities before parameter updates, then schedules minibatches and epochs through mini-megatron.
 """
 
 import torch

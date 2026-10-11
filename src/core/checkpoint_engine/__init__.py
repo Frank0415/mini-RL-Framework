@@ -1,6 +1,6 @@
-"""在线权重发布、传输与安装。CheckpointEngine 通过 WeightSync 入口组织快照、参数传输和推理侧安装。
-Runtime 协调同步时机，CheckpointStore 负责持久化与恢复。
+"""在线权重发布、传输与安装。CheckpointEngine 连接 Snapshot、WeightTransport 和 InstallSession。
+Runtime 决定同步时机，并等待推理侧安装与版本提交完成后开始下一轮。
 
-Online weight publication, transfer, and installation. CheckpointEngine coordinates these through the WeightSync entry point.
-Runtime schedules synchronization; CheckpointStore handles persistence and recovery.
+Online weight publication, transfer, and installation. CheckpointEngine connects Snapshot, WeightTransport, and InstallSession.
+Runtime schedules synchronization and waits for rollout installation and version commit before starting the next iteration.
 """

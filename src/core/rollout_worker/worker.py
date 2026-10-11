@@ -1,8 +1,10 @@
-"""采样执行入口。RolloutWorker 初始化推理组件，组织 tokenizer、任务交互和 verifier，向 Runtime 提供 collect。
-每题的回答组成 SampleGroup，保留原始 token、logprob、奖励和实际版本；TaskLoop 与 SubmissionScheduler 管理内部交互和提交。
+"""采样执行入口。RolloutWorker 接收 mini-sglang Engine、tokenizer 和评分函数，提供 collect。
+单轮任务直接调用 generate_batch 并评分，按题组成 SampleGroup，保留 token、logprob、奖励和实际版本。
+多轮任务交互与提交额度属于 worker 内部，Runtime 负责跨阶段调用。
 
-Rollout execution entry point. RolloutWorker initializes inference components and connects the tokenizer, task interaction, and verifier, exposing collect to Runtime.
-Group responses by task and retain tokens, log probabilities, rewards, and actual versions; TaskLoop and SubmissionScheduler handle interaction and submission.
+Rollout execution entry point. RolloutWorker receives a mini-sglang Engine, tokenizer, and scoring function, exposing collect.
+Single-turn tasks call generate_batch and score responses, retaining tokens, log probabilities, rewards, and actual versions in SampleGroup.
+Task interaction and submission capacity belong inside the worker; Runtime coordinates calls across stages.
 """
 
 from collections.abc import Callable

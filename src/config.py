@@ -1,8 +1,8 @@
-"""实验配置。RunConfig 把 TOML 转为分区 dataclass，并解析数据、模型和 verifier 路径。
-入口读取配置，Runtime 将各部分交给负责的模块。
+"""实验配置。RunConfig 读取 TOML，构造分区 dataclass，并解析数据、模型和 verifier 路径。
+train 加载配置，Runtime 将配置交给对应组件。
 
-Experiment configuration. RunConfig converts TOML into section dataclasses and resolves resource paths.
-The entry point loads the configuration; Runtime passes each section to its owning module.
+Experiment configuration. RunConfig reads TOML, builds section dataclasses, and resolves data, model, and verifier paths.
+train loads the configuration; Runtime passes it to the corresponding components.
 """
 
 from dataclasses import dataclass

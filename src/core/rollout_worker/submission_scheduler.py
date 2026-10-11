@@ -1,6 +1,6 @@
-"""采样提交调度。SubmissionScheduler 管理在途请求额度，并在请求完成后允许继续提交。
-由 RolloutWorker 的任务循环使用；完成经验由 DataEngine 管理。
+"""采样提交调度。SubmissionScheduler 管理任务请求的在途额度，完成后释放额度。
+RolloutWorker 的任务循环使用它；mini-sglang 负责模型批次调度，DataEngine 负责完成经验。
 
-Rollout submission scheduling. SubmissionScheduler limits requests in flight and releases capacity as requests finish.
-RolloutWorker uses it within task loops; DataEngine manages completed experience.
+Rollout submission scheduling. SubmissionScheduler manages capacity for task requests in flight and releases it on completion.
+RolloutWorker uses it within task loops; mini-sglang schedules model batches, and DataEngine handles completed experience.
 """

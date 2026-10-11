@@ -1,4 +1,6 @@
-"""算法模块。负责训练数据准备、目标函数和局部更新安排；全局运行顺序由 Runtime 决定。
+"""算法模块。负责优势值、目标函数和本批数据的更新安排。
+Runtime 决定全局阶段顺序，mini-megatron 执行模型训练。
 
-Algorithms prepare training data, define objectives, and arrange local updates. Runtime orders the overall run.
+Algorithms compute advantages, define objectives, and arrange updates within a batch.
+Runtime orders the overall stages; mini-megatron executes model training.
 """
