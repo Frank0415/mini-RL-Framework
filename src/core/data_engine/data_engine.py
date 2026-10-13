@@ -1,6 +1,35 @@
-"""数据管理入口。DataEngine 接收完整回答组，组织经验存储、数据选择和张量读写，返回 TrainBatch。
-它负责 padding、掩码、组编号与采样版本对齐；算法负责优势值和损失，Runtime 负责调用顺序。
+"""训练数据采样。选择完整回答组，保留样本的分组关系与采样版本。
 
-Data management entry point. DataEngine receives complete response groups and organizes storage, selection, and tensor access to return TrainBatch.
-It aligns padding, masks, group IDs, and behavior versions; algorithms compute advantages and loss, while Runtime orders calls.
+Training data sampling. Select complete response groups while preserving sample grouping and behavior versions.
 """
+import threading
+
+from ...config import RunConfig
+from ...types import SampleGroup
+
+
+class DataEngine:
+    def __init__(self, config: RunConfig):
+        self.config = config
+        self.data_buffer: list[SampleGroup] = []
+        self.mutex = threading.Lock()
+        self.max_size = 10000000 if not config.data.max_size else config.data.max_size
+
+    def push(self, sample_groups: list[SampleGroup]):
+        with self.mutex:
+            if self._len() + len(sample_groups) > self.max_size:
+                raise ValueError("Data buffer is full")
+            self.data_buffer.extend(sample_groups)
+    
+    def pop(self, n: int) -> list[SampleGroup]:
+        with self.mutex:
+            ret = self.data_buffer[:n]
+            self.data_buffer = self.data_buffer[n:]
+            return ret
+
+    def len(self) -> int:
+        with self.mutex:
+            return self._len()
+
+    def _len(self) -> int:
+        return len(self.data_buffer)
