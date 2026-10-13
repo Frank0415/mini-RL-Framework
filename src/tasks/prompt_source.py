@@ -31,11 +31,16 @@ class PromptSource:
                 return_dict=False,
             )
             prompts.append(Prompt(row["id"], token_ids, row["answer"]))
-            self.position = (self.position + 1) % len(self.rows)
+            self.position = (self.position + 1)
+            if self.position >= len(self.rows):
+                break
         return prompts
 
     def state_dict(self) -> dict[str, int]:
         return {"position": self.position}
+
+    def is_finished(self) -> bool:
+        return self.position >= len(self.rows)
 
     def load_state_dict(self, state: dict[str, int]) -> None:
         self.position = state["position"]
