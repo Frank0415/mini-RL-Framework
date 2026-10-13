@@ -1,6 +1,36 @@
-"""模型评估模块。Evaluator 使用独立评估数据，通过 rollout 组件评估已安装的当前策略。
-Runtime 在权重同步后触发评估；评估返回奖励与通过率，保持训练数据位置和随机状态。
+"""策略评估。安装当前训练权重，用固定评估题目采样并计算平均奖励和通过率。
+每题采样一个回答，奖励为 1 视为通过；评估恢复本进程的随机状态。
 
-Model evaluation. Evaluator uses separate evaluation data and rollout components to assess the installed current policy.
-Runtime triggers evaluation after synchronization; evaluation reports rewards and pass rates while preserving training data position and random state.
+Policy evaluation. Install current training weights and sample fixed evaluation prompts to compute mean reward and pass rate.
+Sample one response per prompt, count reward 1 as a pass, and restore this process's random state after evaluation.
 """
+
+import random
+
+import numpy as np
+import torch
+
+from ...types import Prompt
+from ..rollout_worker.worker import RolloutWorker
+
+
+class Evaluator:
+    def __init__(self, rollout_worker: RolloutWorker, prompts: list[Prompt]):
+        self.rollout_worker = rollout_worker
+        self.prompts = prompts
+
+    def evaluate(self, weights: dict[str, torch.Tensor], version: int) -> dict[str, float]:
+        python_state = random.getstate()
+        numpy_state = np.random.get_state()
+        try:
+            with torch.random.fork_rng():
+                self.rollout_worker.engine.update_weights(weights.items(), version)
+                groups = self.rollout_worker.collect(self.prompts, samples_per_prompt=1)
+        finally:
+            random.setstate(python_state)
+            np.random.set_state(numpy_state)
+        rewards = [sample.reward for group in groups for sample in group.samples]
+        return {
+            "reward_mean": sum(rewards) / len(rewards),
+            "pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards),
+        }
