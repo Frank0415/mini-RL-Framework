@@ -1,8 +1,6 @@
-"""实验配置。RunConfig 读取 TOML，构造分区 dataclass，并解析数据、模型和 verifier 路径。
-train 加载配置，Runtime 将配置交给对应组件。
+"""实验配置。读取 TOML，构造分区 dataclass，并解析数据、模型和 verifier 路径。
 
-Experiment configuration. RunConfig reads TOML, builds section dataclasses, and resolves data, model, and verifier paths.
-train loads the configuration; Runtime passes it to the corresponding components.
+Experiment configuration. Read TOML, build section dataclasses, and resolve data, model, and verifier paths.
 """
 
 from dataclasses import dataclass
@@ -18,6 +16,7 @@ class TaskConfig:
 @dataclass
 class DataConfig:
     train: Path
+    max_size: int = 10000000
 
 
 @dataclass
@@ -32,6 +31,7 @@ class ModelConfig:
 
 @dataclass
 class RolloutConfig:
+    engine: str = "mini-sglang"
     samples_per_prompt: int = 4
     max_new_tokens: int = 32
 

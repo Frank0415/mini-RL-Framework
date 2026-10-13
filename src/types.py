@@ -1,8 +1,8 @@
 """模块间的数据约定。Prompt 保存题目与评分标签，Sample 保存一次回答，SampleGroup 保存同题回答组。
-TrainBatch 保存训练张量、掩码、组编号和采样版本，连接 DataEngine、算法与 TrainingWorker。
+GenerationResult 保存生成 token、logprob、版本与结束原因；TrainBatch 保存训练张量、掩码、组编号、采样版本与更新所需数据。
 
 Data contracts between modules. Prompt holds a task and scoring label; Sample holds a response; SampleGroup holds responses to one task.
-TrainBatch connects DataEngine, algorithms, and TrainingWorker with tensors, masks, group IDs, and behavior versions.
+GenerationResult holds generated tokens, log probabilities, versions, and finish reasons; TrainBatch holds training tensors, masks, group IDs, behavior versions, and update data.
 """
 
 from dataclasses import dataclass, replace
@@ -15,6 +15,15 @@ class Prompt:
     prompt_id: str
     prompt_token_ids: list[int]
     answer: str
+
+
+@dataclass
+class GenerationResult:
+    request_id: str
+    token_ids: list[int]
+    log_probs: list[float]
+    weight_version: int
+    finish_reason: str
 
 
 @dataclass

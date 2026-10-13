@@ -1,4 +1,4 @@
-"""RL 框架。train 触发运行，Runtime 协调任务源、worker、数据、权重和日志。
+"""LLM 强化学习框架。
 
-RL framework. train starts a run; Runtime coordinates task sources, workers, data, weights, and logging.
+LLM reinforcement learning framework.
 """
