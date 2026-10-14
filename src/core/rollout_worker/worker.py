@@ -1,26 +1,24 @@
-"""采样执行入口。RolloutWorker 接收 mini-sglang Engine、tokenizer 和评分函数，提供 collect。
-单轮任务直接调用 generate_batch 并评分，按题组成 SampleGroup，保留 token、logprob、奖励和实际版本。
-多轮任务交互与提交额度属于 worker 内部，Runtime 负责跨阶段调用。
+"""回答采样执行入口。接收推理后端、tokenizer 和评分函数。
+collect 生成回答、解码并评分，按题组成 SampleGroup，保留 token、logprob、奖励、版本与结束原因。
 
-Rollout execution entry point. RolloutWorker receives a mini-sglang Engine, tokenizer, and scoring function, exposing collect.
-Single-turn tasks call generate_batch and score responses, retaining tokens, log probabilities, rewards, and actual versions in SampleGroup.
-Task interaction and submission capacity belong inside the worker; Runtime coordinates calls across stages.
+Response sampling entry point. Accept a rollout backend, tokenizer, and scoring function.
+collect generates, decodes, and scores responses, grouping them into SampleGroup with tokens, log probabilities, rewards, versions, and finish reasons.
 """
 
+from src.types import Prompt
+
+
 from collections.abc import Callable
-from typing import cast
 from uuid import uuid4
 
-from mini_sglang import Engine
-from mini_sglang.scheduler.request import RequestStatus
-
 from ...types import Prompt, Sample, SampleGroup
+from .backends import RolloutEngine
 
 
 class RolloutWorker:
     def __init__(
         self,
-        engine: Engine,
+        engine: RolloutEngine,
         tokenizer,
         reward_fn: Callable[[Prompt, str], float],
         max_new_tokens: int = 128,
@@ -43,25 +41,23 @@ class RolloutWorker:
         results = self.engine.generate_batch(inputs, self.max_new_tokens)
         groups = []
 
-        for index, prompt in enumerate(prompts):
+        for index, prompt in enumerate[Prompt](prompts):
             group_id = uuid4().hex
             responses = results[index * samples_per_prompt:(index + 1) * samples_per_prompt]
             samples = []
 
             for response in responses:
-                if response.status != RequestStatus.FINISHED:
-                    raise RuntimeError(f"Rollout failed: {response.finish_reason}")
-                text = self.tokenizer.decode(response.output_ids, skip_special_tokens=True)
+                text = self.tokenizer.decode(response.token_ids, skip_special_tokens=True)
                 samples.append(Sample(
                     sample_id=response.request_id,
                     group_id=group_id,
-                    prompt_token_ids=response.input_ids,
-                    response_token_ids=response.output_ids,
-                    rollout_log_probs=response.output_log_probs,
+                    prompt_token_ids=prompt.prompt_token_ids,
+                    response_token_ids=response.token_ids,
+                    rollout_log_probs=response.log_probs,
                     behavior_version=response.weight_version,
                     reward=float(self.reward_fn(prompt, text)),
-                    finish_reason=cast(str, response.finish_reason),
+                    finish_reason=response.finish_reason,
                 ))
             groups.append(SampleGroup(group_id, prompt.prompt_id, samples))
-            
+
         return groups

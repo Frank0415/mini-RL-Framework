@@ -1,6 +1,15 @@
-"""任务评分加载与调用。RewardVerifier 从配置路径加载实验 verifier 的 score 函数。
-RolloutWorker 用题目标签和回答文本评分；奖励随 Sample 进入 DataEngine。
+"""任务评分加载。按配置路径加载 verifier 的 score 函数，提供题目标签与回答文本的评分入口。
 
-Task scoring loader. RewardVerifier loads the experiment verifier's score function from the configured path.
-RolloutWorker scores task labels and response text; rewards enter DataEngine with Sample records.
+Task scoring loader. Load the verifier's score function from the configured path and expose scoring for task labels and response text.
 """
+from collections.abc import Callable
+from runpy import run_path
+
+from ...config import VerifierConfig
+from ...types import Prompt
+
+
+class RewardVerifier:
+    def __init__(self, config: VerifierConfig):
+        self.verifier_config = config
+        self.score: Callable[[Prompt, str], float] = run_path(str(config.path))["score"]
