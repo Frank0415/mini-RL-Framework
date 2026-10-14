@@ -1,6 +1,16 @@
-"""在线权重快照。Snapshot 从 TrainingWorker 导出本轮参数与版本，供 WeightTransport 传输。
-参数副本独立于训练模型，后续更新不会改变已发布的快照。
+"""在线权重快照。保存本轮参数的独立副本与版本。
+后续参数更新不会改变已发布的快照。
 
-Online weight snapshot. Snapshot exports the current parameters and version from TrainingWorker for WeightTransport.
-Parameter copies remain independent of the training model, so later updates do not change the published snapshot.
+Online weight snapshot. Keep independent parameter copies and their version.
+Later parameter updates do not change the published snapshot.
 """
+
+from ...config import RunConfig
+import torch
+
+class Snapshot:
+    def __init__(self, config: RunConfig):
+        self.config = config
+
+    def snapshot(self, weights: dict[str, torch.Tensor]):
+        pass

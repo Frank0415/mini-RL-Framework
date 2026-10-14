@@ -1,4 +1,4 @@
-"""持久化 checkpoint。CheckpointStore 保存和恢复继续训练所需的状态，供 Runtime 恢复运行。
+"""训练状态持久化。保存与恢复继续训练所需的状态。
 
-Persistent checkpoints. CheckpointStore saves and restores training state for Runtime to resume a run.
+Training-state persistence. Save and restore the state needed to resume training.
 """
