@@ -47,16 +47,26 @@ class TrainingWorker:
             self.reference.model.eval().requires_grad_(False)
         batch = batch.to(self.trainer.engine.device)
         with torch.no_grad():
-            batch.old_log_probs = batch.response_log_probs(
-                self.trainer.engine.log_probs(batch.input_ids, batch.attention_mask),
-            ).detach()
-            ref_log_probs = (
-                batch.response_log_probs(
-                    self.reference.log_probs(batch.input_ids, batch.attention_mask),
-                )
-                if self.algorithm.kl_coef and self.reference is not None
-                else None
+            old_parts = []
+            ref_parts = []
+            order = torch.arange(
+                batch.input_ids.shape[0], device=self.trainer.engine.device,
             )
+            for indices in order.split(self.minibatch_size):
+                minibatch = batch.select(indices)
+                old_parts.append(minibatch.response_log_probs(
+                    self.trainer.engine.log_probs(
+                        minibatch.input_ids, minibatch.attention_mask,
+                    ),
+                ))
+                if self.algorithm.kl_coef and self.reference is not None:
+                    ref_parts.append(minibatch.response_log_probs(
+                        self.reference.log_probs(
+                            minibatch.input_ids, minibatch.attention_mask,
+                        ),
+                    ))
+            batch.old_log_probs = torch.cat(old_parts, dim=0)
+            ref_log_probs = torch.cat(ref_parts, dim=0) if ref_parts else None
         batch.advantages = self.algorithm.advantages(batch.rewards, batch.group_ids)
         totals = {}
         count = 0
