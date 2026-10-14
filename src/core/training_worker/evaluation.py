@@ -10,14 +10,14 @@ import random
 import numpy as np
 import torch
 
-from ...types import Prompt
+from ...tasks.prompt_source import SourceBase
 from ..rollout_worker.worker import RolloutWorker
 
 
 class Evaluator:
-    def __init__(self, rollout_worker: RolloutWorker, prompts: list[Prompt]):
+    def __init__(self, rollout_worker: RolloutWorker, prompts: SourceBase):
         self.rollout_worker = rollout_worker
-        self.prompts = prompts
+        self.prompts = prompts.next_batch(len(prompts.rows))
 
     def evaluate(self, weights: dict[str, torch.Tensor], version: int) -> dict[str, float]:
         python_state = random.getstate()

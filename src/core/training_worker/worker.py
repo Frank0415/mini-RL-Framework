@@ -13,7 +13,7 @@ from mini_megatron import ModelEngine, Trainer
 from ...algorithms.grpo import GRPOAlgorithm
 from ...types import TrainBatch
 from .evaluation import Evaluator
-from ...config import RunConfig
+from ...config import TrainingConfig
 
 
 class TrainingWorker:
@@ -21,20 +21,19 @@ class TrainingWorker:
         self,
         trainer: Trainer,
         algorithm: GRPOAlgorithm,
-        config: RunConfig,
+        config: TrainingConfig,
         reference: ModelEngine | None = None,
         evaluator: Evaluator | None = None,
-        eval_every: int = 0,
     ):
-        if eval_every > 0 and evaluator is None:
+        if config.eval_every > 0 and evaluator is None:
             raise ValueError("An evaluator is required when eval_every is enabled")
         self.trainer = trainer
         self.algorithm = algorithm
         self.reference = reference
-        self.minibatch_size = config.training.minibatch_size
-        self.update_epochs = config.training.update_epochs
+        self.minibatch_size = config.minibatch_size
+        self.update_epochs = config.update_epochs
         self.evaluator = evaluator
-        self.eval_every = eval_every
+        self.eval_every = config.eval_every
         self.batches_trained = 0
 
     @property
@@ -86,6 +85,7 @@ class TrainingWorker:
                     if name != "optimizer_step":
                         totals[name] = totals.get(name, 0.0) + value * len(indices)
                 count += len(indices)
+
         self.batches_trained += 1
         difference = (batch.old_log_probs - batch.rollout_log_probs).abs()
         metrics = {
