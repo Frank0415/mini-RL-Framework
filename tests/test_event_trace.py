@@ -67,6 +67,7 @@ class TraceTests(unittest.TestCase):
         starts = {event["id"] for event in trace.events if event["ph"] == "s"}
         finishes = {event["id"] for event in trace.events if event["ph"] == "f"}
         self.assertEqual(starts, finishes)
+        self.assertEqual({event["cat"] for event in trace.events if event["ph"] in ("s", "f")}, {"sample"})
         trace.finished = True
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "trace.json"

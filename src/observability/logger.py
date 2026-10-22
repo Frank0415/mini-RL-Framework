@@ -20,7 +20,8 @@ class EventLogger:
 
     def _event(self, name, track, phase, timestamp, **fields):
         tid = self.tracks.setdefault(track, len(self.tracks) + 1)
-        event = dict(name=name, cat=track, ph=phase, ts=timestamp, pid=1, tid=tid, **fields)
+        event = dict(name=name, cat=track, ph=phase, ts=timestamp, pid=1, tid=tid)
+        event.update(fields)
         self.events.append(event)
         return event
 
@@ -42,8 +43,8 @@ class EventLogger:
         if sample_id in self.samples:
             previous = self.samples[sample_id]
             flow_id = next(self.flow_ids)
-            self._event("sample", previous["cat"], "s", previous["ts"], id=flow_id)
-            self._event("sample", track, "f", timestamp, id=flow_id, bp="e")
+            self._event("sample", previous["cat"], "s", previous["ts"], id=flow_id, cat="sample")
+            self._event("sample", track, "f", timestamp, id=flow_id, bp="e", cat="sample")
         self.samples[sample_id] = point
 
     def training(self, step, **values):
