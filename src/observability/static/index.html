@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RL Trace</title>
+<link rel="stylesheet" href="/rl/style.css">
+<main>
+  <header>
+    <div><p class="eyebrow">MINI RL FRAMEWORK</p><h1>训练进度与事件</h1></div>
+    <div class="actions"><a href="/rl/trace.json" download="trace.json">下载 Trace</a><button id="refresh">刷新时间线</button></div>
+  </header>
+  <section class="progress-panel">
+    <div><span class="label">训练进度</span><strong id="steps">0 / 0</strong></div>
+    <progress id="progress" value="0" max="1"></progress>
+    <div class="run-state"><span id="iteration">第 0 轮</span><span id="status">训练中</span></div>
+  </section>
+  <section class="timeline-panel">
+    <div class="panel-heading"><h2>组件事件</h2><span>框架边界 · 主机时间 · Perfetto v58.2</span></div>
+    <iframe id="perfetto" src="/#!/?mode=embedded" title="Perfetto 事件时间线"></iframe>
+  </section>
+</main>
+<script type="module" src="/rl/app.js"></script>
+</html>

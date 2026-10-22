@@ -1,0 +1,37 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, "Noto Sans SC", system-ui, sans-serif;
+  color: #4b504c;
+  background: #f3f1ec;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1800px; margin: auto; padding: 28px 32px; }
+header, .actions, .panel-heading, .run-state { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+header { margin-bottom: 24px; }
+h1 { font-size: 25px; margin: 4px 0 0; font-weight: 600; letter-spacing: -.5px; }
+h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.eyebrow { color: #8b938b; font-size: 10px; letter-spacing: 2px; margin: 0 0 8px; }
+button, a { font: inherit; font-size: 12px; text-decoration: none; color: inherit; }
+button { border: 1px solid #c9c8bd; border-radius: 7px; background: #e7e8df; padding: 9px 14px; cursor: pointer; }
+button:hover { background: #d9ded2; }
+a { padding: 8px; color: #738474; }
+section { border: 1px solid #deded5; border-radius: 12px; background: #fbfaf6; overflow: hidden; }
+.progress-panel { padding: 20px 24px; margin-bottom: 18px; }
+.label { font-size: 12px; color: #8d9188; margin-right: 18px; }
+strong { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+progress { width: 100%; height: 7px; appearance: none; border: 0; margin: 16px 0 10px; }
+progress::-webkit-progress-bar { background: #e7e7df; border-radius: 4px; }
+progress::-webkit-progress-value { background: #8b9e90; border-radius: 4px; }
+progress::-moz-progress-bar { background: #8b9e90; border-radius: 4px; }
+.run-state, .panel-heading span { font-size: 11px; color: #8b9087; }
+.panel-heading { padding: 17px 22px; border-bottom: 1px solid #e5e4dd; }
+iframe { display: block; width: 100%; height: 680px; border: 0; filter: saturate(.4); background: white; }
+@media (max-width: 700px) {
+  main { padding: 18px 12px; }
+  header { align-items: flex-start; }
+  h1 { font-size: 20px; }
+  .actions { gap: 4px; }
+  .panel-heading span { max-width: 150px; text-align: right; }
+}
