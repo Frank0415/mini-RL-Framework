@@ -15,10 +15,12 @@ import torch
 from torch import nn, optim
 
 from ...config import RunConfig
+from ...observability import EventLogger
 
 
 class CheckpointStore:
-    def __init__(self, config: RunConfig):
+    def __init__(self, config: RunConfig, trace: EventLogger | None = None):
+        self.trace = trace or EventLogger()
         self.checkpoint_count = config.checkpoint.checkpoint_count
         self.checkpoint_location = config.checkpoint.checkpoint_location
         if self.checkpoint_count < 1:
@@ -50,8 +52,9 @@ class CheckpointStore:
         path = self.checkpoint_location / f"checkpoint-{timestamp}.pt"
         temporary = path.with_suffix(".pt.tmp")
         try:
-            torch.save(state, temporary)
-            temporary.replace(path)
+            with self.trace.span("checkpoint.save", "checkpoint", path=str(path)):
+                torch.save(state, temporary)
+                temporary.replace(path)
         except Exception:
             temporary.unlink(missing_ok=True)
             raise
