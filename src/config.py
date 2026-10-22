@@ -61,6 +61,7 @@ class RunConfig:
     rollout: RolloutConfig
     training: TrainingConfig
     checkpoint: CheckpointConfig
+    trace: Path = Path("trace")
 
     @classmethod
     def from_toml(cls, path: str | Path) -> "RunConfig":
@@ -88,4 +89,5 @@ class RunConfig:
             rollout=RolloutConfig(**config["rollout"]),
             training=TrainingConfig(**config["training"]),
             checkpoint=CheckpointConfig(**checkpoint),
+            trace=(path.parent / config.get("trace", "trace")).resolve(),
         )

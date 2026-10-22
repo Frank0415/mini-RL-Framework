@@ -1,3 +1,5 @@
+trace = "trace"
+
 [task]
 prompt_template = "{question}\nReturn only the final integer on a line beginning with ####."
 
