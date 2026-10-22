@@ -17,6 +17,8 @@ class TaskConfig:
 class DataConfig:
     train: Path
     max_size: int = 10000000
+    batch_size: int = 32
+    eval: Path | None = None
 
 
 @dataclass
@@ -33,7 +35,8 @@ class ModelConfig:
 class RolloutConfig:
     engine: str = "mini-sglang"
     samples_per_prompt: int = 4
-    max_new_tokens: int = 32
+    samples_per_update: int = 32
+    max_new_tokens: int = 128
 
 
 @dataclass
@@ -41,6 +44,12 @@ class TrainingConfig:
     learning_rate: float = 1e-5
     minibatch_size: int = 4
     update_epochs: int = 1
+    eval_every: int = 0
+
+@dataclass
+class CheckpointConfig:
+    checkpoint_count: int = 3
+    checkpoint_location: Path = Path("checkpoint")
 
 
 @dataclass
@@ -51,6 +60,7 @@ class RunConfig:
     model: ModelConfig
     rollout: RolloutConfig
     training: TrainingConfig
+    checkpoint: CheckpointConfig
 
     @classmethod
     def from_toml(cls, path: str | Path) -> "RunConfig":
@@ -64,6 +74,12 @@ class RunConfig:
             ("data", "train"), ("verifier", "path"), ("model", "path"),
         ):
             config[section][key] = (path.parent / config[section][key]).resolve()
+        if config["data"].get("eval") is not None:
+            config["data"]["eval"] = (path.parent / config["data"]["eval"]).resolve()
+        checkpoint = config.setdefault("checkpoint", {})
+        checkpoint["checkpoint_location"] = (
+            path.parent / checkpoint.get("checkpoint_location", "checkpoint")
+        ).resolve()
         return cls(
             task=TaskConfig(**config["task"]),
             data=DataConfig(**config["data"]),
@@ -71,4 +87,5 @@ class RunConfig:
             model=ModelConfig(**config["model"]),
             rollout=RolloutConfig(**config["rollout"]),
             training=TrainingConfig(**config["training"]),
+            checkpoint=CheckpointConfig(**checkpoint),
         )
