@@ -90,6 +90,7 @@ class Runtime:
             },
         )
         export_trace(self.trace, self.trace_path)
+        print(f"Trace: {self.trace_path}", flush=True)
 
         while not source.is_finished():
             self.trace.iteration += 1
@@ -132,4 +133,3 @@ class Runtime:
         self.trace.finished = True
         self.trace.event("run.end", "runtime", actor_version=training_worker.actor_version)
         export_trace(self.trace, self.trace_path)
-        print(f"Trace: {self.trace_path}")
