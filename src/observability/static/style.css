@@ -45,6 +45,9 @@ progress::-moz-progress-bar { background: #8b9e90; border-radius: 4px; }
 .timeline-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .timeline-panel > .panel-heading { flex: none; }
 iframe { display: block; width: 100%; flex: 1; min-height: 0; border: 0; filter: saturate(.4); background: white; }
+body.timeline-fullscreen { overflow: hidden; }
+.timeline-fullscreen header, .timeline-fullscreen .summary { display: none; }
+.timeline-fullscreen .timeline-panel { position: fixed; inset: 0; height: 100dvh; z-index: 10; border: 0; border-radius: 0; }
 @media (max-width: 700px) {
   main { padding: 12px; }
   header { align-items: flex-start; }

@@ -2,6 +2,27 @@ const frame = document.querySelector("#perfetto");
 const origin = location.origin;
 let trace;
 
+function setFullscreen(fullscreen) {
+  document.body.classList.toggle("timeline-fullscreen", fullscreen);
+  const button = document.querySelector("#fullscreen");
+  button.textContent = fullscreen ? "退出全屏" : "全屏时间线";
+  button.setAttribute("aria-pressed", String(fullscreen));
+  if (!fullscreen) renderLoss(trace.otherData.metrics);
+}
+
+function fullscreenKey(event) {
+  if (event.key === "Escape" && document.body.classList.contains("timeline-fullscreen")) {
+    event.stopPropagation();
+    setFullscreen(false);
+  }
+}
+
+document.querySelector("#fullscreen").onclick = () => {
+  setFullscreen(!document.body.classList.contains("timeline-fullscreen"));
+};
+window.addEventListener("keydown", fullscreenKey, true);
+frame.addEventListener("load", () => frame.contentWindow.addEventListener("keydown", fullscreenKey, true));
+
 const ready = new Promise(resolve => {
   const ping = setInterval(() => frame.contentWindow.postMessage("PING", origin), 100);
   window.addEventListener("message", function receive(event) {
