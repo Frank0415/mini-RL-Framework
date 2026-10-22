@@ -37,16 +37,18 @@ function renderLoss(metrics) {
   const values = metrics.map(point => point.loss);
   const low = Math.min(...values), high = Math.max(...values);
   const padding = Math.max((high - low) * .15, Math.abs(high) * .05, 1e-6);
-  const x = step => 70 + (step - first.step) / Math.max(1, last.step - first.step) * 1100;
-  const y = value => 22 + (high + padding - value) / (high - low + 2 * padding) * 145;
+  const width = svg.clientWidth;
+  svg.setAttribute("viewBox", `0 0 ${width} 100`);
+  const x = step => 66 + (step - first.step) / Math.max(1, last.step - first.step) * (width - 90);
+  const y = value => 10 + (high + padding - value) / (high - low + 2 * padding) * 60;
   const path = metrics.map((point, index) => `${index ? "L" : "M"}${x(point.step)},${y(point.loss)}`).join(" ");
   const ticks = [high + padding, (high + low) / 2, low - padding];
   const steps = [...new Set([first.step, Math.round((first.step + last.step) / 2), last.step])];
   svg.innerHTML = `
     <defs><linearGradient id="loss-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b7a197" stop-opacity=".22"/><stop offset="1" stop-color="#b7a197" stop-opacity="0"/></linearGradient></defs>
-    ${ticks.map(value => `<path class="grid" d="M70,${y(value)} H1170"/><text x="58" y="${y(value) + 4}" text-anchor="end">${number.format(value)}</text>`).join("")}
-    ${steps.map(step => `<text x="${x(step)}" y="194" text-anchor="middle">Step ${step}</text>`).join("")}
-    <path d="${path} L${x(last.step)},167 L${x(first.step)},167 Z" fill="url(#loss-fill)"/>
+    ${ticks.map(value => `<path class="grid" d="M66,${y(value)} H${width - 24}"/><text x="56" y="${y(value) + 4}" text-anchor="end">${number.format(value)}</text>`).join("")}
+    ${steps.map(step => `<text x="${x(step)}" y="92" text-anchor="middle">Step ${step}</text>`).join("")}
+    <path d="${path} L${x(last.step)},70 L${x(first.step)},70 Z" fill="url(#loss-fill)"/>
     <path class="curve" d="${path}"/>
     ${metrics.map(point => `<circle cx="${x(point.step)}" cy="${y(point.loss)}" r="3.5" tabindex="0" role="button" aria-label="Step ${point.step}, loss ${number.format(point.loss)}" data-step="${point.step}"/>`).join("")}`;
   document.querySelector("#loss-value").textContent = number.format(last.loss);

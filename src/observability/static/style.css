@@ -7,20 +7,20 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
-main { max-width: 1800px; margin: auto; padding: 28px 32px; }
+main { max-width: 1800px; height: 100dvh; margin: auto; padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
 header, .actions, .panel-heading, .run-state { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-header { margin-bottom: 24px; }
-h1 { font-size: 25px; margin: 4px 0 0; font-weight: 600; letter-spacing: -.5px; }
+header { flex: none; }
+h1 { font-size: 22px; margin: 4px 0 0; font-weight: 600; letter-spacing: -.5px; }
 h2 { margin: 0; font-size: 15px; font-weight: 600; }
-.eyebrow { color: #8b938b; font-size: 10px; letter-spacing: 2px; margin: 0 0 8px; }
+.eyebrow { color: #8b938b; font-size: 10px; letter-spacing: 2px; margin: 0 0 4px; }
 button, a { font: inherit; font-size: 12px; text-decoration: none; color: inherit; }
 button { border: 1px solid #c9c8bd; border-radius: 7px; background: #e7e8df; padding: 9px 14px; cursor: pointer; }
 button:hover { background: #d9ded2; }
 a { padding: 8px; color: #738474; }
 section { border: 1px solid #deded5; border-radius: 12px; background: #fbfaf6; overflow: hidden; }
-.summary { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; margin-bottom: 18px; }
-.progress-panel { padding: 22px 24px; display: flex; flex-direction: column; justify-content: space-between; }
-.progress-panel strong { display: block; margin-top: 14px; font-size: 29px; }
+.summary { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 12px; height: 158px; flex: none; }
+.progress-panel { padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; }
+.progress-panel strong { display: block; margin-top: 8px; font-size: 25px; }
 .label { font-size: 12px; color: #8d9188; margin-right: 18px; }
 strong { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
 progress { width: 100%; height: 7px; appearance: none; border: 0; margin: 16px 0 10px; }
@@ -28,26 +28,31 @@ progress::-webkit-progress-bar { background: #e7e7df; border-radius: 4px; }
 progress::-webkit-progress-value { background: #8b9e90; border-radius: 4px; }
 progress::-moz-progress-bar { background: #8b9e90; border-radius: 4px; }
 .run-state, .panel-heading span { font-size: 11px; color: #8b9087; }
-.panel-heading { padding: 17px 22px; border-bottom: 1px solid #e5e4dd; }
-.loss-panel { margin: 0; }
-.loss-panel .panel-heading { border-bottom: 0; padding-bottom: 0; }
-.loss-panel h2 { margin-bottom: 5px; }
+.panel-heading { padding: 12px 18px; border-bottom: 1px solid #e5e4dd; }
+.loss-panel { margin: 0; display: grid; grid-template-rows: 40px minmax(0, 1fr) 22px; }
+.loss-panel .panel-heading { border-bottom: 0; padding: 8px 16px 0; }
+.loss-panel h2 { margin-bottom: 2px; }
 .loss-value { text-align: right; color: #9e7f7c; }
-.loss-value strong { display: block; }
+.loss-value strong { display: block; font-size: 20px; }
 .loss-value span { font-size: 10px; color: #92968e; }
-#loss-chart { display: block; width: 100%; height: 180px; }
+#loss-chart { display: block; width: 100%; height: 100%; min-height: 0; }
 #loss-chart text { fill: #93988e; font: 11px system-ui, sans-serif; }
 #loss-chart .grid { stroke: #e8e6df; stroke-width: 1; }
 #loss-chart .curve { fill: none; stroke: #9e7f7c; stroke-width: 2.5; stroke-linejoin: round; }
 #loss-chart circle { fill: #b7a197; stroke: #fbfaf6; stroke-width: 2; cursor: pointer; }
 #loss-chart circle:hover, #loss-chart circle:focus { fill: #6f8589; r: 6px; outline: none; }
-#loss-detail { display: block; margin: 0 24px 15px; font-size: 11px; color: #92968e; min-height: 15px; }
-iframe { display: block; width: 100%; height: max(350px, calc(100vh - 450px)); border: 0; filter: saturate(.4); background: white; }
+#loss-detail { display: block; margin: 0 16px 6px; font-size: 11px; color: #92968e; }
+.timeline-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.timeline-panel > .panel-heading { flex: none; }
+iframe { display: block; width: 100%; flex: 1; min-height: 0; border: 0; filter: saturate(.4); background: white; }
 @media (max-width: 700px) {
-  main { padding: 18px 12px; }
+  main { padding: 12px; }
   header { align-items: flex-start; }
   h1 { font-size: 20px; }
   .actions { gap: 4px; }
   .panel-heading span { max-width: 150px; text-align: right; }
-  .summary { grid-template-columns: 1fr; }
+  .summary { grid-template-columns: 160px minmax(0, 1fr); }
+  .loss-panel .panel-heading > div:first-child > span { display: none; }
+  .progress-panel { padding: 12px; }
+  .progress-panel strong { font-size: 20px; }
 }
