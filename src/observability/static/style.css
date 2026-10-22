@@ -18,7 +18,9 @@ button { border: 1px solid #c9c8bd; border-radius: 7px; background: #e7e8df; pad
 button:hover { background: #d9ded2; }
 a { padding: 8px; color: #738474; }
 section { border: 1px solid #deded5; border-radius: 12px; background: #fbfaf6; overflow: hidden; }
-.progress-panel { padding: 20px 24px; margin-bottom: 18px; }
+.summary { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; margin-bottom: 18px; }
+.progress-panel { padding: 22px 24px; display: flex; flex-direction: column; justify-content: space-between; }
+.progress-panel strong { display: block; margin-top: 14px; font-size: 29px; }
 .label { font-size: 12px; color: #8d9188; margin-right: 18px; }
 strong { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
 progress { width: 100%; height: 7px; appearance: none; border: 0; margin: 16px 0 10px; }
@@ -27,11 +29,25 @@ progress::-webkit-progress-value { background: #8b9e90; border-radius: 4px; }
 progress::-moz-progress-bar { background: #8b9e90; border-radius: 4px; }
 .run-state, .panel-heading span { font-size: 11px; color: #8b9087; }
 .panel-heading { padding: 17px 22px; border-bottom: 1px solid #e5e4dd; }
-iframe { display: block; width: 100%; height: 680px; border: 0; filter: saturate(.4); background: white; }
+.loss-panel { margin: 0; }
+.loss-panel .panel-heading { border-bottom: 0; padding-bottom: 0; }
+.loss-panel h2 { margin-bottom: 5px; }
+.loss-value { text-align: right; color: #9e7f7c; }
+.loss-value strong { display: block; }
+.loss-value span { font-size: 10px; color: #92968e; }
+#loss-chart { display: block; width: 100%; height: 180px; }
+#loss-chart text { fill: #93988e; font: 11px system-ui, sans-serif; }
+#loss-chart .grid { stroke: #e8e6df; stroke-width: 1; }
+#loss-chart .curve { fill: none; stroke: #9e7f7c; stroke-width: 2.5; stroke-linejoin: round; }
+#loss-chart circle { fill: #b7a197; stroke: #fbfaf6; stroke-width: 2; cursor: pointer; }
+#loss-chart circle:hover, #loss-chart circle:focus { fill: #6f8589; r: 6px; outline: none; }
+#loss-detail { display: block; margin: 0 24px 15px; font-size: 11px; color: #92968e; min-height: 15px; }
+iframe { display: block; width: 100%; height: max(350px, calc(100vh - 450px)); border: 0; filter: saturate(.4); background: white; }
 @media (max-width: 700px) {
   main { padding: 18px 12px; }
   header { align-items: flex-start; }
   h1 { font-size: 20px; }
   .actions { gap: 4px; }
   .panel-heading span { max-width: 150px; text-align: right; }
+  .summary { grid-template-columns: 1fr; }
 }
