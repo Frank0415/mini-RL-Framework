@@ -3,6 +3,9 @@ prompt_template = "{question}\nReturn only the final integer on a line beginning
 
 [data]
 train = "data/train.jsonl"
+max_size = 100000
+batch_size = 32
+eval = "data/eval.jsonl"
 
 [verifier]
 path = "verifier.py"
@@ -11,10 +14,17 @@ path = "verifier.py"
 path = "model"
 
 [rollout]
+engine = "mini-sglang"
 samples_per_prompt = 4
-max_new_tokens = 32
+samples_per_update = 32
+max_new_tokens = 512
 
 [training]
 learning_rate = 0.00001
 minibatch_size = 4
 update_epochs = 1
+eval_every = 1
+
+[checkpoint]
+checkpoint_count = 3
+checkpoint_location = "checkpoint"
