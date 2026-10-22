@@ -5,12 +5,10 @@ Response sampling entry point. Accept a rollout backend, tokenizer, and scoring 
 collect generates, decodes, and scores responses, grouping them into SampleGroup with tokens, log probabilities, rewards, versions, and finish reasons.
 """
 
-from src.types import Prompt
-
-
 from collections.abc import Callable
 from uuid import uuid4
 
+from ...observability import EventLogger
 from ...types import Prompt, Sample, SampleGroup
 from .backends import RolloutEngine
 
@@ -22,11 +20,13 @@ class RolloutWorker:
         tokenizer,
         reward_fn: Callable[[Prompt, str], float],
         max_new_tokens: int = 128,
+        trace: EventLogger | None = None,
     ):
         self.engine = engine
         self.tokenizer = tokenizer
         self.reward_fn = reward_fn
         self.max_new_tokens = max_new_tokens
+        self.trace = trace or EventLogger()
 
     def collect(
         self,
@@ -38,7 +38,14 @@ class RolloutWorker:
             for prompt in prompts
             for _ in range(samples_per_prompt)
         ]
-        results = self.engine.generate_batch(inputs, self.max_new_tokens)
+        started = self.trace.timestamp()
+        with self.trace.span(
+            "rollout.generate", "rollout",
+            prompt_ids=[prompt.prompt_id for prompt in prompts],
+            samples_per_prompt=samples_per_prompt,
+        ) as event:
+            results = self.engine.generate_batch(inputs, self.max_new_tokens)
+            event["sample_ids"] = [response.request_id for response in results]
         groups = []
 
         for index, prompt in enumerate[Prompt](prompts):
@@ -47,7 +54,18 @@ class RolloutWorker:
             samples = []
 
             for response in responses:
+                self.trace.sample(
+                    "rollout.enter", response.request_id, "rollout", timestamp=started,
+                    prompt_id=prompt.prompt_id, group_id=group_id,
+                    behavior_version=response.weight_version,
+                )
                 text = self.tokenizer.decode(response.token_ids, skip_special_tokens=True)
+                with self.trace.span("reward.score", "reward", sample_id=response.request_id):
+                    reward = float(self.reward_fn(prompt, text))
+                self.trace.sample(
+                    "reward.ready", response.request_id, "reward",
+                    reward=reward, group_id=group_id,
+                )
                 samples.append(Sample(
                     sample_id=response.request_id,
                     group_id=group_id,
@@ -55,7 +73,7 @@ class RolloutWorker:
                     response_token_ids=response.token_ids,
                     rollout_log_probs=response.log_probs,
                     behavior_version=response.weight_version,
-                    reward=float(self.reward_fn(prompt, text)),
+                    reward=reward,
                     finish_reason=response.finish_reason,
                 ))
             groups.append(SampleGroup(group_id, prompt.prompt_id, samples))
