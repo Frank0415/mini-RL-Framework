@@ -70,7 +70,7 @@ function renderLoss(metrics) {
 }
 
 async function focusStep(step) {
-  await ready;
+  await openTrace();
   const event = trace.traceEvents.find(event => event.name === "train.minibatch" && event.args.optimizer_step === step);
   frame.contentWindow.postMessage({perfetto: {
     timeStart: event.ts / 1e6, timeEnd: (event.ts + event.dur) / 1e6, viewPercentage: 1,
