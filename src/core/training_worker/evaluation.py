@@ -11,11 +11,13 @@ import numpy as np
 import torch
 
 from ...tasks.prompt_source import SourceBase
+from ...observability import EventLogger
 from ..rollout_worker.worker import RolloutWorker
 
 
 class Evaluator:
-    def __init__(self, rollout_worker: RolloutWorker, prompts: SourceBase):
+    def __init__(self, rollout_worker: RolloutWorker, prompts: SourceBase, trace: EventLogger | None = None):
+        self.trace = trace or EventLogger()
         self.rollout_worker = rollout_worker
         self.prompts = prompts.next_batch(len(prompts.rows))
 
@@ -23,7 +25,7 @@ class Evaluator:
         python_state = random.getstate()
         numpy_state = np.random.get_state()
         try:
-            with torch.random.fork_rng():
+            with torch.random.fork_rng(), self.trace.span("evaluation.run", "evaluation", actor_version=version):
                 self.rollout_worker.engine.update_weights(weights.items(), version)
                 groups = self.rollout_worker.collect(self.prompts, samples_per_prompt=1)
         finally:

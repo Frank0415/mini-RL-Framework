@@ -12,6 +12,7 @@ from mini_megatron import ModelEngine, Trainer
 
 from ...algorithms.grpo import GRPOAlgorithm
 from ...types import TrainBatch
+from ...observability import EventLogger
 from .evaluation import Evaluator
 from ...config import TrainingConfig
 
@@ -24,9 +25,11 @@ class TrainingWorker:
         config: TrainingConfig,
         reference: ModelEngine | None = None,
         evaluator: Evaluator | None = None,
+        trace: EventLogger | None = None,
     ):
         if config.eval_every > 0 and evaluator is None:
             raise ValueError("An evaluator is required when eval_every is enabled")
+        self.trace = trace or EventLogger()
         self.trainer = trainer
         self.algorithm = algorithm
         self.reference = reference
@@ -45,8 +48,13 @@ class TrainingWorker:
             raise ValueError("A reference model is required for KL loss")
         if self.reference is not None:
             self.reference.model.eval().requires_grad_(False)
+        for sample_id in batch.sample_ids:
+            self.trace.sample("train.enter", sample_id, "training", actor_version=self.actor_version)
         batch = batch.to(self.trainer.engine.device)
-        with torch.no_grad():
+        with torch.no_grad(), self.trace.span(
+            "train.old_log_probs", "training", sample_ids=batch.sample_ids,
+            actor_version=self.actor_version,
+        ):
             old_parts = []
             ref_parts = []
             order = torch.arange(
@@ -71,7 +79,7 @@ class TrainingWorker:
         totals = {}
         count = 0
         batch_size = batch.input_ids.shape[0]
-        for _ in range(self.update_epochs):
+        for epoch in range(self.update_epochs):
             order = torch.randperm(batch_size, device=self.trainer.engine.device)
             for indices in order.split(self.minibatch_size):
                 minibatch = batch.select(indices)
@@ -86,11 +94,21 @@ class TrainingWorker:
                         ref_probs,
                     )
 
-                metrics = self.trainer.train_step(
-                    minibatch.input_ids,
-                    minibatch.attention_mask,
-                    loss_fn,
-                )
+                with self.trace.span(
+                    "train.minibatch", "training", epoch=epoch + 1,
+                    optimizer_step=self.actor_version + 1, sample_ids=minibatch.sample_ids,
+                ):
+                    for sample_id in minibatch.sample_ids:
+                        self.trace.sample(
+                            "train.minibatch.enter", sample_id, "training",
+                            epoch=epoch + 1, optimizer_step=self.actor_version + 1,
+                        )
+                    metrics = self.trainer.train_step(
+                        minibatch.input_ids,
+                        minibatch.attention_mask,
+                        loss_fn,
+                    )
+                self.trace.training(self.actor_version, **metrics)
                 for name, value in metrics.items():
                     if name != "optimizer_step":
                         totals[name] = totals.get(name, 0.0) + value * len(indices)
