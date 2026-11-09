@@ -32,7 +32,10 @@ class Runtime:
         self.trace_path = config.trace / run_id / "trace.json"
 
     def run(self) -> None:
-        resources = ResourceScheduler(self.config)
+        with ResourceScheduler(self.config) as resources:
+            self._run(resources)
+
+    def _run(self, resources: ResourceScheduler) -> None:
         self.trace.event("run.start", "runtime", model=str(self.config.model.path))
         with self.trace.span("tokenizer.load", "runtime"):
             tokenizer = AutoTokenizer.from_pretrained(

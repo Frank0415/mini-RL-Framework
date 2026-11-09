@@ -41,6 +41,17 @@ class ResourceSchedulerTests(unittest.TestCase):
         training.assert_called_once_with(config.model.path, device="cpu", dtype=torch.bfloat16)
         rollout.assert_called_once_with(config.model, config.rollout, device="cuda:3")
 
+    def test_multiple_training_devices_wrap_the_primary_model(self):
+        config = RunConfig.from_toml(ROOT / "sample/basic_arithmetic")
+        config.resources.training_devices = ["cuda:2", "cuda:0"]
+        with (
+            patch("src.core.runtime.resource_scheduler.ModelEngine.from_pretrained") as training,
+            patch("src.core.runtime.resource_scheduler.ParallelModelEngine") as parallel,
+            ResourceScheduler(config) as scheduler,
+        ):
+            self.assertIs(scheduler.build_training_engine(), parallel.return_value)
+        parallel.assert_called_once_with(training.return_value.model, [torch.device("cuda:2"), torch.device("cuda:0")])
+
 
 if __name__ == "__main__":
     unittest.main()
