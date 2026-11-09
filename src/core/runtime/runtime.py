@@ -7,7 +7,7 @@ Convert consumed response groups into TrainBatch and pass it to TrainingWorker f
 
 from datetime import datetime, timezone
 
-from mini_megatron import ModelEngine, Trainer
+from mini_megatron import Trainer
 from transformers import AutoTokenizer
 
 from ...algorithms.grpo import GRPOAlgorithm
@@ -17,11 +17,11 @@ from ...tasks.prompt_source import EvalSource, PromptSource
 from ..data_engine.data_engine import DataEngine
 from ..checkpoint_engine.checkpoint_engine import CheckpointEngine
 from ..checkpoint_store.checkpoint_store import CheckpointStore
-from ..rollout_worker.backends import build_rollout_engine
 from ..rollout_worker.reward_verifier import RewardVerifier
 from ..rollout_worker.worker import RolloutWorker
 from ..training_worker.evaluation import Evaluator
 from ..training_worker.worker import TrainingWorker
+from .resource_scheduler import ResourceScheduler
 
 
 class Runtime:
@@ -32,6 +32,7 @@ class Runtime:
         self.trace_path = config.trace / run_id / "trace.json"
 
     def run(self) -> None:
+        resources = ResourceScheduler(self.config)
         self.trace.event("run.start", "runtime", model=str(self.config.model.path))
         with self.trace.span("tokenizer.load", "runtime"):
             tokenizer = AutoTokenizer.from_pretrained(
@@ -42,7 +43,7 @@ class Runtime:
         )
         verifier = RewardVerifier(self.config.verifier)
         with self.trace.span("rollout.load", "runtime"):
-            rollout_engine = build_rollout_engine(self.config.model, self.config.rollout)
+            rollout_engine = resources.build_rollout_engine()
         data_engine = DataEngine(self.config, trace=self.trace)
         rollout_worker = RolloutWorker(
             rollout_engine,
@@ -62,7 +63,7 @@ class Runtime:
         with self.trace.span("training.load", "runtime"):
             training_worker = TrainingWorker(
                 Trainer(
-                    ModelEngine.from_pretrained(self.config.model.path),
+                    resources.build_training_engine(),
                     learning_rate=self.config.training.learning_rate,
                 ),
                 GRPOAlgorithm(),

@@ -29,10 +29,11 @@ class RolloutEngine(Protocol):
 
 
 class MiniSGLangBackend:
-    def __init__(self, model: ModelConfig):
+    def __init__(self, model: ModelConfig, device: str = "cuda"):
         from mini_sglang import Engine
 
-        self.engine = Engine(model_dir=model.path, do_sample=True)
+        self.device = torch.device(device)
+        self.engine = Engine(model_dir=model.path, device=device, do_sample=True)
 
     def generate_batch(
         self,
@@ -66,5 +67,7 @@ class MiniSGLangBackend:
 _BACKENDS = {"mini-sglang": MiniSGLangBackend}
 
 
-def build_rollout_engine(model: ModelConfig, rollout: RolloutConfig) -> RolloutEngine:
-    return _BACKENDS[rollout.engine](model)
+def build_rollout_engine(
+    model: ModelConfig, rollout: RolloutConfig, device: str = "cuda",
+) -> RolloutEngine:
+    return _BACKENDS[rollout.engine](model, device=device)

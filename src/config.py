@@ -3,7 +3,7 @@
 Experiment configuration. Read TOML, build section dataclasses, and resolve data, model, and verifier paths.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import tomllib
 
@@ -45,6 +45,13 @@ class TrainingConfig:
     minibatch_size: int = 4
     update_epochs: int = 1
     eval_every: int = 0
+    dtype: str = "float32"
+
+
+@dataclass
+class ResourceConfig:
+    training_devices: list[str] = field(default_factory=lambda: ["cuda:0"])
+    rollout_devices: list[str] = field(default_factory=lambda: ["cuda:0"])
 
 @dataclass
 class CheckpointConfig:
@@ -62,6 +69,7 @@ class RunConfig:
     training: TrainingConfig
     checkpoint: CheckpointConfig
     trace: Path = Path("trace")
+    resources: ResourceConfig = field(default_factory=ResourceConfig)
 
     @classmethod
     def from_toml(cls, path: str | Path) -> "RunConfig":
@@ -90,4 +98,5 @@ class RunConfig:
             training=TrainingConfig(**config["training"]),
             checkpoint=CheckpointConfig(**checkpoint),
             trace=(path.parent / config.get("trace", "trace")).resolve(),
+            resources=ResourceConfig(**config.get("resources", {})),
         )
