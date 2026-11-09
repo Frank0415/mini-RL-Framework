@@ -14,7 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class ResourceSchedulerTests(unittest.TestCase):
     def test_existing_config_keeps_single_gpu_placement(self):
-        config = RunConfig.from_toml(ROOT / "sample/basic_arithmetic")
+        content = (ROOT / "sample/basic_arithmetic/config.toml").read_text()
+        content = content.replace('\n[resources]\ntraining_devices = ["cuda:0"]\nrollout_devices = ["cuda:0"]\n', '')
+        with TemporaryDirectory() as directory:
+            config_file = Path(directory) / "config.toml"
+            config_file.write_text(content)
+            config = RunConfig.from_toml(config_file)
         self.assertEqual(config.resources.training_devices, ["cuda:0"])
         self.assertEqual(config.resources.rollout_devices, ["cuda:0"])
 
@@ -22,7 +27,10 @@ class ResourceSchedulerTests(unittest.TestCase):
         content = (ROOT / "sample/basic_arithmetic/config.toml").read_text()
         with TemporaryDirectory() as directory:
             config_file = Path(directory) / "config.toml"
-            config_file.write_text(content + '\n[resources]\ntraining_devices = ["cuda:2", "cuda:0"]\nrollout_devices = ["cuda:1"]\n')
+            config_file.write_text(content.replace(
+                'training_devices = ["cuda:0"]\nrollout_devices = ["cuda:0"]',
+                'training_devices = ["cuda:2", "cuda:0"]\nrollout_devices = ["cuda:1"]',
+            ))
             config = RunConfig.from_toml(config_file)
         self.assertEqual(config.resources.training_devices, ["cuda:2", "cuda:0"])
         self.assertEqual(config.resources.rollout_devices, ["cuda:1"])

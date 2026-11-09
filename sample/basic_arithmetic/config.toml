@@ -26,6 +26,11 @@ learning_rate = 0.00001
 minibatch_size = 4
 update_epochs = 1
 eval_every = 1
+dtype = "float32"
+
+[resources]
+training_devices = ["cuda:0"]
+rollout_devices = ["cuda:0"]
 
 [checkpoint]
 checkpoint_count = 3
