@@ -131,15 +131,17 @@ class TrainingWorker:
             and self.batches_trained % self.eval_every == 0
         ):
             evaluation = self.evaluator.evaluate(
-                self.export_weights(), self.actor_version
+                self.export_weights(cpu=False), self.actor_version
             )
             metrics.update(
                 {f"eval/{name}": value for name, value in evaluation.items()}
             )
         return metrics
 
-    def export_weights(self):
-        return self.trainer.engine.export_weights()
+    def export_weights(self, *, cpu: bool = True):
+        if cpu:
+            return self.trainer.engine.export_weights()
+        return self.trainer.engine.model.state_dict()
 
     def state_dict(self) -> dict[str, object]:
         return {**self.trainer.state_dict(), "batches_trained": self.batches_trained}

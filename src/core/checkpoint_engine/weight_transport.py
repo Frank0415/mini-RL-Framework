@@ -3,12 +3,20 @@
 Online weight transfer. Deliver parameter snapshots and their version to the rollout side.
 """
 
-from ...config import RunConfig
+from collections.abc import Iterable, Iterator
+
 import torch
 
-class WeightTransport:
-    def __init__(self, config: RunConfig):
-        self.config = config
 
-    def transport(self, weights: dict[str, torch.Tensor]):
-        pass
+class WeightTransport:
+    def __init__(self, device: str | torch.device):
+        self.device = torch.device(device)
+
+    def transport(
+        self, weights: Iterable[tuple[str, torch.Tensor]],
+    ) -> Iterator[tuple[str, torch.Tensor]]:
+        for name, weight in weights:
+            weight = weight.detach()
+            if self.device.type == "cuda" and weight.device.type == "cpu":
+                weight = weight.pin_memory()
+            yield name, weight.to(self.device, non_blocking=self.device.type == "cuda")

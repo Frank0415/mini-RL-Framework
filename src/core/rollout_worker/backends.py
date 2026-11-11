@@ -12,6 +12,7 @@ import torch
 
 from ...config import ModelConfig, RolloutConfig
 from ...types import GenerationResult
+from ..checkpoint_engine.weight_transport import WeightTransport
 
 
 class RolloutEngine(Protocol):
@@ -29,10 +30,12 @@ class RolloutEngine(Protocol):
 
 
 class MiniSGLangBackend:
-    def __init__(self, model: ModelConfig):
+    def __init__(self, model: ModelConfig, device: str = "cuda"):
         from mini_sglang import Engine
 
-        self.engine = Engine(model_dir=model.path, do_sample=True)
+        self.device = torch.device(device)
+        self.weight_transport = WeightTransport(self.device)
+        self.engine = Engine(model_dir=model.path, device=device, do_sample=True)
 
     def generate_batch(
         self,
@@ -60,11 +63,13 @@ class MiniSGLangBackend:
         weights: Iterable[tuple[str, torch.Tensor]],
         version: int,
     ) -> None:
-        self.engine.update_weights(weights, version)
+        self.engine.update_weights(self.weight_transport.transport(weights), version)
 
 
 _BACKENDS = {"mini-sglang": MiniSGLangBackend}
 
 
-def build_rollout_engine(model: ModelConfig, rollout: RolloutConfig) -> RolloutEngine:
-    return _BACKENDS[rollout.engine](model)
+def build_rollout_engine(
+    model: ModelConfig, rollout: RolloutConfig, device: str = "cuda",
+) -> RolloutEngine:
+    return _BACKENDS[rollout.engine](model, device=device)
